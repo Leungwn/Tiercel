@@ -99,9 +99,11 @@ public class DownloadTask: Task<DownloadTask> {
     internal init(_ url: URL,
                   headers: [String: String]? = nil,
                   fileName: String? = nil,
+                  originName: String,
                   cache: Cache,
                   operationQueue: DispatchQueue) {
         super.init(url,
+                   originName: originName,
                    headers: headers,
                    cache: cache,
                    operationQueue: operationQueue)
