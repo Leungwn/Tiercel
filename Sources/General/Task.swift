@@ -49,7 +49,8 @@ public class Task<TaskType>: NSObject, Codable {
         case status
         case verificationType
         case validation
-        case error
+        case error 
+        case originName
     }
     
     enum CompletionType {
@@ -86,6 +87,7 @@ public class Task<TaskType>: NSObject, Codable {
         var endDate: Double = 0
         var speed: Int64 = 0
         var fileName: String
+        var originName: String
         var timeRemaining: Int64 = 0
         var error: Error?
 
@@ -148,6 +150,10 @@ public class Task<TaskType>: NSObject, Codable {
         set { protectedState.write { $0.currentURL = newValue } }
     }
 
+    public var originName: String {
+        get { protectedState.wrappedValue.originName }
+        set { protectedState.write { $0.originName = newValue } }
+    }
 
     public internal(set) var startDate: Double {
         get { protectedState.wrappedValue.startDate }
@@ -231,13 +237,14 @@ public class Task<TaskType>: NSObject, Codable {
 
 
     internal init(_ url: URL,
+                  originName: String,
                   headers: [String: String]? = nil,
                   cache: Cache,
                   operationQueue:DispatchQueue) {
         self.cache = cache
         self.url = url
         self.operationQueue = operationQueue
-        protectedState = Protected(State(currentURL: url, fileName: url.tr.fileName))
+        protectedState = Protected(State(currentURL: url, fileName: url.tr.fileName, originName: originName))
         super.init()
         self.headers = headers
     }
@@ -256,6 +263,7 @@ public class Task<TaskType>: NSObject, Codable {
         try container.encodeIfPresent(verificationCode, forKey: .verificationCode)
         try container.encode(verificationType.rawValue, forKey: .verificationType)
         try container.encode(validation.rawValue, forKey: .validation)
+        try container.encode(originName, forKey: .originName)
         if let error = error {
             let errorData: Data
             if #available(iOS 11.0, *) {
@@ -272,7 +280,8 @@ public class Task<TaskType>: NSObject, Codable {
         url = try container.decode(URL.self, forKey: .url)
         let currentURL = try container.decode(URL.self, forKey: .currentURL)
         let fileName = try container.decode(String.self, forKey: .fileName)
-        protectedState = Protected(State(currentURL: currentURL, fileName: fileName))
+        let originName = try container.decode(String.self, forKey: .originName)
+        protectedState = Protected(State(currentURL: currentURL, fileName: fileName, originName: originName))
         cache = decoder.userInfo[.cache] as? Cache ?? Cache("default")
         operationQueue = decoder.userInfo[.operationQueue] as? DispatchQueue ?? DispatchQueue(label: "com.Tiercel.SessionManager.operationQueue")
         super.init()
