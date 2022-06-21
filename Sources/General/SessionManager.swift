@@ -304,6 +304,7 @@ extension SessionManager {
     public func download(_ url: URLConvertible,
                          headers: [String: String]? = nil,
                          fileName: String? = nil,
+                         originName: String,
                          onMainQueue: Bool = true,
                          handler: Handler<DownloadTask>? = nil) -> DownloadTask? {
         do {
@@ -317,6 +318,7 @@ extension SessionManager {
                     task = DownloadTask(validURL,
                                         headers: headers,
                                         fileName: fileName,
+                                        originName: originName,
                                         cache: cache,
                                         operationQueue: operationQueue)
                     task.manager = self
@@ -346,6 +348,7 @@ extension SessionManager {
     public func multiDownload(_ urls: [URLConvertible],
                               headersArray: [[String: String]]? = nil,
                               fileNames: [String]? = nil,
+                              originNames: [String: String],
                               onMainQueue: Bool = true,
                               handler: Handler<SessionManager>? = nil) -> [DownloadTask] {
         if let headersArray = headersArray,
@@ -367,7 +370,7 @@ extension SessionManager {
             for (index, url) in urls.enumerated() {
                 let fileName = fileNames?.safeObject(at: index)
                 let headers = headersArray?.safeObject(at: index)
-
+                let originName = originNames["\(url)"]
                 guard let validURL = try? url.asURL() else {
                     log(.error("create dowloadTask failed", error: TiercelError.invalidURL(url: url)))
                     continue
@@ -385,6 +388,7 @@ extension SessionManager {
                     task = DownloadTask(validURL,
                                         headers: headers,
                                         fileName: fileName,
+                                        originName: originName ?? "",
                                         cache: cache,
                                         operationQueue: operationQueue)
                     task.manager = self
